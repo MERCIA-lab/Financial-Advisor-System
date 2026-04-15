@@ -1,202 +1,110 @@
-import { useEffect, useState } from "react";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import { Box, Typography } from '@mui/material';
+import CssBaseline from '@mui/material/CssBaseline';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import theme from './theme/theme';
 
-const API = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
+// Components
+import Login from './components/pages/Login';
+import Dashboard from './components/pages/Dashboard';
+import ClientList from './components/pages/ClientList';
+import PortfolioView from './components/pages/PortfolioView';
+import DashboardLayout from './components/layout/DashboardLayout';
 
-const emptyClient = { name: "", email: "", phone: "" };
-const emptySecurity = {
-  name: "",
-  category: "",
-  purchaseDate: "",
-  purchasePrice: "",
-  quantity: 1,
-};
+// Protected Route Component
+function ProtectedRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
 
-export default function App() {
-  const [token, setToken] = useState(localStorage.getItem("xod_token") || "");
-  const [advisor, setAdvisor] = useState(JSON.parse(localStorage.getItem("xod_advisor") || "null"));
-  const [loginForm, setLoginForm] = useState({ email: "advisor@xod.local", password: "password" });
-  const [error, setError] = useState("");
-
-  const [clients, setClients] = useState([]);
-  const [selectedClientId, setSelectedClientId] = useState(null);
-  const [securities, setSecurities] = useState([]);
-
-  const [clientForm, setClientForm] = useState(emptyClient);
-  const [editingClientId, setEditingClientId] = useState(null);
-
-  const [securityForm, setSecurityForm] = useState(emptySecurity);
-  const [editingSecurityId, setEditingSecurityId] = useState(null);
-
-  useEffect(() => {
-    if (token) loadClients();
-  }, [token]);
-
-  useEffect(() => {
-    if (selectedClientId && token) loadSecurities(selectedClientId);
-    else setSecurities([]);
-  }, [selectedClientId, token]);
-
-  async function apiFetch(path, options = {}) {
-    const res = await fetch(`${API}${path}`, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(options.headers || {}),
-      },
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || "Request failed");
-    }
-
-    if (res.status === 204) return null;
-    const contentType = res.headers.get("content-type") || "";
-    return contentType.includes("application/json") ? res.json() : null;
-  }
-
-  async function login(e) {
-    e.preventDefault();
-    setError("");
-    try {
-      const data = await fetch(`${API}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(loginForm),
-      }).then(async (res) => {
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      });
-
-      setToken(data.token);
-      setAdvisor({ advisorId: data.advisorId, name: data.name, email: data.email });
-      localStorage.setItem("xod_token", data.token);
-      localStorage.setItem("xod_advisor", JSON.stringify({ advisorId: data.advisorId, name: data.name, email: data.email }));
-    } catch (err) {
-      setError("Login failed. Check credentials.");
-    }
-  }
-
-  function logout() {
-    setToken("");
-    setAdvisor(null);
-    setClients([]);
-    setSecurities([]);
-    setSelectedClientId(null);
-    localStorage.removeItem("xod_token");
-    localStorage.removeItem("xod_advisor");
-  }
-
-  async function loadClients() {
-    const data = await apiFetch("/clients");
-    setClients(data);
-    if (!selectedClientId && data.length) setSelectedClientId(data[0].clientId);
-    if (selectedClientId && !data.some((c) => c.clientId === selectedClientId)) {
-      setSelectedClientId(data.length ? data[0].clientId : null);
-    }
-  }
-
-  async function loadSecurities(clientId) {
-    const data = await apiFetch(`/clients/${clientId}/securities`);
-    setSecurities(data);
-  }
-
-  function startEditClient(client) {
-    setEditingClientId(client.clientId);
-    setClientForm({ name: client.name, email: client.email, phone: client.phone });
-  }
-
-  function cancelEditClient() {
-    setEditingClientId(null);
-    setClientForm(emptyClient);
-  }
-
-  async function saveClient(e) {
-    e.preventDefault();
-    if (editingClientId) {
-      await apiFetch(`/clients/${editingClientId}`, {
-        method: "PUT",
-        body: JSON.stringify(clientForm),
-      });
-    } else {
-      await apiFetch("/clients", {
-        method: "POST",
-        body: JSON.stringify(clientForm),
-      });
-    }
-    cancelEditClient();
-    await loadClients();
-  }
-
-  async function deleteClient(clientId) {
-    await apiFetch(`/clients/${clientId}`, { method: "DELETE" });
-    if (selectedClientId === clientId) setSelectedClientId(null);
-    await loadClients();
-  }
-
-  function startEditSecurity(security) {
-    setEditingSecurityId(security.securityId);
-    setSecurityForm({
-      name: security.name,
-      category: security.category,
-      purchaseDate: security.purchaseDate,
-      purchasePrice: security.purchasePrice,
-      quantity: security.quantity,
-    });
-  }
-
-  function cancelEditSecurity() {
-    setEditingSecurityId(null);
-    setSecurityForm(emptySecurity);
-  }
-
-  async function saveSecurity(e) {
-    e.preventDefault();
-    if (!selectedClientId) return;
-
-    const payload = {
-      ...securityForm,
-      purchasePrice: Number(securityForm.purchasePrice),
-      quantity: Number(securityForm.quantity),
-    };
-
-    if (editingSecurityId) {
-      await apiFetch(`/clients/securities/${editingSecurityId}`, {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      });
-    } else {
-      await apiFetch(`/clients/${selectedClientId}/securities`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-    }
-
-    cancelEditSecurity();
-    await loadSecurities(selectedClientId);
-  }
-
-  async function deleteSecurity(securityId) {
-    await apiFetch(`/clients/securities/${securityId}`, { method: "DELETE" });
-    await loadSecurities(selectedClientId);
-  }
-
-  if (!token) {
+  if (loading) {
     return (
-      <main>
-        <h1>XOD Financial Advisor Login</h1>
-        <section className="card auth-card">
-          <form onSubmit={login}>
-            <input type="email" placeholder="Email" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} required />
-            <input type="password" placeholder="Password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} required />
-            <button type="submit">Login</button>
-            {error && <p className="error">{error}</p>}
-          </form>
-        </section>
-      </main>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Typography>Loading...</Typography>
+      </Box>
     );
   }
+
+  return isAuthenticated ? children : <Navigate to="/login" />;
+}
+
+// App Router Component
+function AppRouter() {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <Router>
+      <Routes>
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to="/" /> : <Login />}
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Dashboard />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clients"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <ClientList />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clients/:clientId/portfolio"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <PortfolioView />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/portfolio"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <div>Portfolio Analysis Page - Coming Soon</div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <div>Settings Page - Coming Soon</div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <AppRouter />
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
 
   return (
     <main>

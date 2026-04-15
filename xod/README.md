@@ -4,105 +4,226 @@
 
 ## Tech Stack
 
-- Frontend: React + Vite + Nginx
-- Backend: Spring Boot + Spring Security + JWT + JPA
-- Database: PostgreSQL
-- Migration: Flyway
-- Orchestration: Docker Compose
+- **Frontend**: React + Vite + Nginx
+- **Backend**: Spring Boot + Spring Security + JWT + JPA
+- **Database**: PostgreSQL
+- **Migration**: Flyway
+- **Orchestration**: Docker Compose
+- **Monitoring**: Docker logs, health checks, and application metrics
 
 ## Features Implemented
 
-- Advisor authentication with JWT
-- Authorization scoped to advisor-owned clients and securities
-- Client CRUD including update form
-- Security CRUD including update form
-- Automatic one-to-one portfolio creation when a client is created
-- Business-hours guard on write APIs (Mon-Fri, 09:00-17:00)
-- Foreign keys + indexes aligned with ERD
-- Flyway migration-based schema management
+- ✅ Advisor authentication with JWT
+- ✅ Authorization scoped to advisor-owned clients and securities
+- ✅ Client CRUD including update form
+- ✅ Security CRUD including update form
+- ✅ Automatic one-to-one portfolio creation when a client is created
+- ✅ Business-hours guard on write APIs (Mon-Fri, 09:00-17:00)
+- ✅ Foreign keys + indexes aligned with ERD
+- ✅ Flyway migration-based schema management
 
-## Default Login
+## Quick Start
 
-- Email: `advisor@xod.local`
-- Password: `password`
+### Default Login Credentials
+- **Email**: `advisor@xod.local`
+- **Password**: `password`
 
-## Run (One Command)
-
+### One-Command Run
 From the `xod` directory:
-
-- `docker compose up --build`
+```bash
+docker compose up --build
+```
 
 Then open: `http://localhost:5173`
 
-## Deploy With Supabase + Render + Vercel
+## Monitoring & Health Checks
 
-Use this flow to connect your own Supabase account and host quickly.
+### Application Health
+Check if all services are running:
+```bash
+docker compose ps
+```
 
-### 1) Create Supabase Postgres connection
+### Service Health Endpoints
+- **Backend Health**: `http://localhost:8080/actuator/health`
+- **Frontend Health**: `http://localhost:5173` (check if page loads)
 
-- In Supabase: open `Project Settings -> Database -> Connection string`
-- Copy the URI and convert it to JDBC format:
-  - `jdbc:postgresql://db.<project-ref>.supabase.co:5432/postgres?sslmode=require`
-- Keep:
-  - DB user (`postgres` by default)
-  - DB password
+### Logs Monitoring
+View real-time logs for all services:
+```bash
+docker compose logs -f
+```
 
-### 2) Deploy backend to Render
+View logs for specific service:
+```bash
+# Backend logs
+docker compose logs -f backend
 
-- Create a new Web Service from this repo
-- Service root: `backend`
-- Environment: Docker
-- Set env vars from `backend/.env.example`:
+# Frontend logs
+docker compose logs -f frontend
+
+# Database logs
+docker compose logs -f db
+```
+
+### Resource Usage Monitoring
+Monitor container resource usage:
+```bash
+docker stats
+```
+
+### Database Monitoring
+Connect to PostgreSQL database:
+```bash
+docker compose exec db psql -U xod_user -d xod_db
+```
+
+Check database size and connections:
+```sql
+-- Database size
+SELECT pg_size_pretty(pg_database_size('xod_db'));
+
+-- Active connections
+SELECT count(*) FROM pg_stat_activity;
+
+-- Table sizes
+SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+```
+
+## Deployment Options
+
+### Local Development
+1. **Docker (Recommended)**:
+   ```bash
+   docker compose up --build
+   ```
+
+2. **Manual Setup**:
+   - **Backend**: `cd backend && mvn spring-boot:run`
+   - **Frontend**: `cd frontend && npm install && npm run dev`
+   - **Database**: Ensure PostgreSQL is running locally
+
+### Production Deployment (Supabase + Render + Vercel)
+
+#### 1. Database Setup (Supabase)
+- Create Supabase project
+- Get connection string: `Project Settings -> Database -> Connection string`
+- Convert to JDBC: `jdbc:postgresql://db.<project-ref>.supabase.co:5432/postgres?sslmode=require`
+
+#### 2. Backend Deployment (Render)
+- Create Web Service from this repo
+- **Root directory**: `backend`
+- **Environment**: Docker
+- **Environment Variables**:
   - `SPRING_DATASOURCE_URL`
   - `SPRING_DATASOURCE_USERNAME`
   - `SPRING_DATASOURCE_PASSWORD`
   - `APP_JWT_SECRET`
   - `APP_JWT_EXPIRATION_MS`
-  - `APP_CORS_ALLOWED_ORIGINS` (set to your Vercel frontend URL)
-- Deploy and copy backend URL, e.g. `https://xod-backend.onrender.com`
+  - `APP_CORS_ALLOWED_ORIGINS`
 
-### 3) Deploy frontend to Vercel
+#### 3. Frontend Deployment (Vercel)
+- Import `frontend` directory
+- **Environment Variable**: `VITE_API_BASE_URL=https://your-backend-url.onrender.com/api`
 
-- Import `frontend` as a Vercel project
-- Set env var:
-  - `VITE_API_BASE_URL=https://xod-backend.onrender.com/api`
-- Deploy and open the frontend URL
+## API Documentation
 
-### 4) Login and preview
+### Authentication
+- `POST /api/auth/login` - Advisor login
 
-- Open your Vercel URL
-- Login with:
-  - `advisor@xod.local`
-  - `password`
-- You can now preview the hosted design and full workflow.
+### Clients Management
+- `GET /api/clients` - List all clients
+- `POST /api/clients` - Create new client
+- `PUT /api/clients/{clientId}` - Update client
+- `DELETE /api/clients/{clientId}` - Delete client
 
-## Local Non-Docker Run
+### Securities Management
+- `GET /api/clients/{clientId}/securities` - List client securities
+- `POST /api/clients/{clientId}/securities` - Add security to client
+- `PUT /api/clients/securities/{securityId}` - Update security
+- `DELETE /api/clients/securities/{securityId}` - Delete security
 
-### Backend
+## Troubleshooting
 
-- `cd backend`
-- Ensure PostgreSQL is running and accessible
-- `mvn spring-boot:run`
+### Common Issues
 
-### Frontend
+**Port Conflicts**:
+```bash
+# Check what's using ports 8080, 5432, 5173
+lsof -i :8080
+lsof -i :5432
+lsof -i :5173
+```
 
-- `cd frontend`
-- `npm install`
-- `npm run dev`
+**Database Connection Issues**:
+```bash
+# Restart database
+docker compose restart db
 
-## API Summary
+# Check database logs
+docker compose logs db
+```
 
-- Auth:
-  - `POST /api/auth/login`
+**Build Failures**:
+```bash
+# Clean and rebuild
+docker compose down -v
+docker compose up --build --force-recreate
+```
 
-- Clients:
-  - `GET /api/clients`
-  - `POST /api/clients`
-  - `PUT /api/clients/{clientId}`
-  - `DELETE /api/clients/{clientId}`
+**Memory Issues**:
+```bash
+# Increase Docker memory limit or check system resources
+docker system df
+```
 
-- Securities:
-  - `GET /api/clients/{clientId}/securities`
-  - `POST /api/clients/{clientId}/securities`
-  - `PUT /api/clients/securities/{securityId}`
-  - `DELETE /api/clients/securities/{securityId}`
+### Performance Monitoring
+
+**Application Metrics** (Spring Boot Actuator):
+- `http://localhost:8080/actuator/metrics`
+- `http://localhost:8080/actuator/info`
+
+**Database Performance**:
+```sql
+-- Slow queries
+SELECT pid, now() - pg_stat_activity.query_start AS duration, query
+FROM pg_stat_activity
+WHERE state = 'active'
+ORDER BY duration DESC;
+
+-- Index usage
+SELECT schemaname, tablename, indexname, idx_scan, idx_tup_read, idx_tup_fetch
+FROM pg_stat_user_indexes
+ORDER BY idx_scan DESC;
+```
+
+## Development
+
+### Prerequisites
+- Docker & Docker Compose
+- Java 17+ (for local backend development)
+- Node.js 18+ (for local frontend development)
+- Maven (for backend builds)
+
+### Project Structure
+```
+xod/
+├── backend/          # Spring Boot application
+├── frontend/         # React application
+├── docker-compose.yml # Multi-service orchestration
+└── README.md         # This file
+```
+
+### Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

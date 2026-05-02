@@ -1,6 +1,6 @@
 # XOD - Financial Advisor Client Management System
 
-`xod` is a full-stack implementation of the Financial Advisor Client Management System with secure advisor login, client/security CRUD, PostgreSQL storage, Flyway migrations, and Dockerized one-command startup.
+`xod` is a full-stack implementation of the 'Financial Advisor Client Management System' with secure advisor login, client/security CRUD, PostgreSQL storage, Flyway migrations, and Dockerized one-command startup.
 
 ## Tech Stack
 
@@ -180,6 +180,7 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
   ```env
   VITE_API_BASE_URL=https://your-backend-url.onrender.com
   ```
+  (The frontend will normalize this to include `/api` automatically.)
 - Deploy and get your frontend URL
 
 #### 4. Update CORS (Backend)
@@ -347,6 +348,193 @@ xod/
 3. Make your changes
 4. Test thoroughly
 5. Submit a pull request
+
+## 🚀 Production Launch Plan
+
+### Phase 1: Preparation & Planning
+✅ **Completed:**
+- Responsive React frontend with Material UI black/yellow theme
+- Spring Boot backend with JWT authentication
+- PostgreSQL database with Flyway migrations
+- Docker containerization with docker-compose
+- Testing framework setup (Jest, Cypress, JUnit)
+- Monitoring stack (Prometheus, Grafana)
+- CI/CD deployment configurations
+
+### Phase 2: Infrastructure Setup
+**Tasks:**
+- [ ] **Supabase Database**:
+  - Create production project at https://supabase.com
+  - Configure connection pooling
+  - Set up automated backups
+  - Enable Row Level Security (RLS)
+
+- [ ] **Render Backend Deployment**:
+  - Navigate to https://render.com
+  - Connect GitHub repository
+  - Configure environment variables from `backend/.env.example`
+  - Set up health checks and auto-scaling
+
+- [ ] **Vercel Frontend Deployment**:
+  - Navigate to https://vercel.com
+  - Import project from GitHub
+  - Set root directory: `frontend`
+  - Configure `VITE_API_BASE_URL` environment variable
+
+### Phase 3: Security & Compliance
+**Implementation:**
+- SSL/TLS certificates (Let's Encrypt or AWS ACM)
+- HTTPS redirect and security headers
+- Data encryption at rest and in transit
+- Audit logging and compliance monitoring
+- Rate limiting and DDoS protection
+
+### Phase 4: Testing & Validation
+**Test Suites:**
+- **Unit Tests**: Jest for components, JUnit for services
+- **Integration Tests**: API endpoint testing
+- **E2E Tests**: Cypress for critical user workflows
+- **Performance Tests**: Load testing with JMeter
+- **Security Tests**: OWASP ZAP vulnerability scanning
+
+### Phase 5: Launch & Post-Launch
+**Go-Live Checklist:**
+- [ ] Final smoke tests
+- [ ] Database migration verification
+- [ ] DNS records updated
+- [ ] Monitoring alerts configured
+- [ ] Incident response team ready
+- [ ] User notification plan executed
+
+**Post-Launch Activities:**
+- Real-time monitoring with Grafana dashboards
+- Daily performance reviews
+- Quick response to critical issues
+- User feedback collection
+- A/B testing for UI improvements
+- Regular security patches
+
+## 📊 Key Performance Indicators
+
+### Frontend Metrics
+- Page load time: < 2 seconds
+- Time to interactive: < 3 seconds
+- Lighthouse score: > 90
+- Accessibility score: 100% (WCAG 2.1 AA)
+
+### Backend Metrics
+- API response time: < 100ms (p95)
+- Error rate: < 0.1%
+- Availability: 99.9% uptime
+- Database query time: < 50ms
+
+### System Capacity
+- Concurrent users supported: 1000+
+- Requests per second: 1000+
+- Data transfer: < 500Mbps
+- Storage utilization: < 80%
+
+## 📈 Scaling Strategy
+
+### Horizontal Scaling
+```yaml
+# Scale backend
+docker service scale backend=3
+
+# Scale frontend
+docker service scale frontend=2
+
+# Load balancing
+# Use Nginx or AWS ALB
+```
+
+### Vertical Scaling
+- Increase JVM heap size for backend
+- Upgrade database instance type
+- Add more CPU/RAM to servers
+
+### Caching Strategy
+- Redis for session management
+- CloudFlare for static asset caching
+- Browser caching for frontend assets
+
+## 🔒 Security Best Practices
+
+### Authentication & Authorization
+- JWT tokens with 8-hour expiration
+- Refresh token rotation
+- Role-based access control (RBAC)
+- Multi-factor authentication (MFA) ready
+
+### Data Protection
+- End-to-end encryption for sensitive data
+- Parameterized queries to prevent SQL injection
+- Input validation and sanitization
+- Output encoding for XSS prevention
+
+### Infrastructure Security
+- VPC with private subnets
+- Security groups for network isolation
+- Web Application Firewall (WAF)
+- Regular security audits and penetration testing
+
+## 📞 Monitoring & Alerts
+
+### Prometheus Metrics
+```yaml
+# Backend metrics
+- http_requests_total
+- http_request_duration_seconds
+- jvm_memory_used_bytes
+
+# Database metrics
+- pg_connections
+- pg_transaction_duration
+- pg_cache_hit_ratio
+```
+
+### Grafana Dashboards
+- System Overview (CPU, Memory, Disk)
+- API Performance (Response times, Error rates)
+- Database Health (Connections, Queries)
+- User Activity (Login trends, Feature usage)
+
+### Alert Conditions
+- High error rate (> 1%)
+- Slow response times (> 500ms)
+- Low disk space (< 10%)
+- Database connection pool exhausted
+- Memory usage critical (> 90%)
+
+## 🛠️ Maintenance & Updates
+
+### Regular Tasks
+- Daily: Check monitoring dashboards
+- Weekly: Review error logs and performance metrics
+- Monthly: Database optimization and cleanup
+- Quarterly: Security patches and dependency updates
+
+### Backup Strategy
+- Daily automated backups to S3
+- Point-in-time recovery capability
+- Backup integrity verification
+- Disaster recovery drills
+
+### Zero-Downtime Deployments
+- Blue-green deployment strategy
+- Database migration scripts
+- Feature flags for gradual rollouts
+- Automated rollback capability
+
+## 📚 Additional Resources
+
+- [React Documentation](https://react.dev)
+- [Spring Boot Guide](https://spring.io/guides/gs/spring-boot/)
+- [Material UI Documentation](https://mui.com)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs)
+- [Docker Documentation](https://docs.docker.com)
+- [Prometheus Documentation](https://prometheus.io/docs)
+- [Grafana Documentation](https://grafana.com/docs)
 
 ## License
 

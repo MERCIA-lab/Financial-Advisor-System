@@ -1,4 +1,4 @@
-package com.xod.backend.controller;
+package com.xod.backend.controller; //Requesting Informations from the Resigned Database
 
 import com.xod.backend.dto.AuthResponse;
 import com.xod.backend.dto.LoginRequest;

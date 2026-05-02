@@ -1,4 +1,4 @@
-package com.xod.backend.controller;
+package com.xod.backend.controller;    //Enabling 2FA (Two Factor Authentifications for End Users!)
 
 import com.xod.backend.dto.SecurityRequest;
 import com.xod.backend.entity.Security;

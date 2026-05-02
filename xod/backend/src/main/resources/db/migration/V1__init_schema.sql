@@ -1,6 +1,8 @@
 CREATE TABLE financial_advisor (
     advisor_id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     phone VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -12,7 +14,9 @@ CREATE TABLE financial_advisor (
 CREATE TABLE client (
     client_id BIGSERIAL PRIMARY KEY,
     advisor_id BIGINT NOT NULL REFERENCES financial_advisor(advisor_id),
-    name VARCHAR(255) NOT NULL,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     phone VARCHAR(100) NOT NULL,
     created_at TIMESTAMP NOT NULL,
@@ -22,8 +26,7 @@ CREATE TABLE client (
 CREATE TABLE portfolio (
     portfolio_id BIGSERIAL PRIMARY KEY,
     client_id BIGINT NOT NULL UNIQUE REFERENCES client(client_id),
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+    creation_date TIMESTAMP NOT NULL
 );
 
 CREATE TABLE security (
@@ -42,5 +45,5 @@ CREATE INDEX idx_client_advisor_id ON client(advisor_id);
 CREATE INDEX idx_portfolio_client_id ON portfolio(client_id);
 CREATE INDEX idx_security_portfolio_id ON security(portfolio_id);
 
-INSERT INTO financial_advisor (name, email, phone, password_hash, role, created_at, updated_at)
-VALUES ('Default Advisor', 'advisor@xod.local', '555-0100', '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi8wQ9Q0jrISFRCGDpa2BkLomqKgJo6', 'ADVISOR', NOW(), NOW());
+INSERT INTO financial_advisor (first_name, last_name, address, email, phone, password_hash, role, created_at, updated_at)
+VALUES ('Default', 'Advisor', '123 Finance Avenue', 'advisor@xod.local', '555-0100', '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi8wQ9Q0jrISFRCGDpa2BkLomqKgJo6', 'ADVISOR', NOW(), NOW());

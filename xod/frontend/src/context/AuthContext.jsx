@@ -14,6 +14,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+  const apiBaseUrl = rawApiBaseUrl.endsWith('/api')
+    ? rawApiBaseUrl
+    : `${rawApiBaseUrl.replace(/\/$/, '')}/api`;
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
@@ -26,7 +31,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/auth/login`, {
+      const response = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

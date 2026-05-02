@@ -35,6 +35,6 @@ public class ClientController {
 
     @DeleteMapping("/{clientId}")
     public void delete(@PathVariable Long clientId, Authentication authentication) {
-        clientService.delete(clientId, authentication.getName());
+        clientService.delete(clientId, authentication.getName()); ////Requesting Informations from the Resigned Database
     }
 }

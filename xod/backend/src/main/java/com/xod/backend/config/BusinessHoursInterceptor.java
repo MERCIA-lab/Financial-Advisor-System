@@ -26,7 +26,8 @@ public class BusinessHoursInterceptor implements HandlerInterceptor {
         boolean businessDay = now.getDayOfWeek() != DayOfWeek.SATURDAY && now.getDayOfWeek() != DayOfWeek.SUNDAY;
         boolean businessHour = now.getHour() >= 9 && now.getHour() < 17;
 
-        if (!businessDay || !businessHour) {
+        if (!businessDay || !businessHour) 
+        {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Write operations allowed only on weekdays from 9:00 to 17:00");
             return false;
         }
